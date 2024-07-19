@@ -1,47 +1,51 @@
-import { CircleDashed, UserCog } from "lucide-react";
+import { CheckCircle2, CircleDashed, UserCog } from "lucide-react";
 import { Button } from "../../components/button";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { api } from "../../lib/axios";
+
+interface Participant {
+  id: string;
+  name: string | null;
+  email: string;
+  is_confirmed: boolean;
+}
 
 export function Guests() {
-    return (
-        <div className="space-y-6">
-            <h2 className="font-semibold text-xl">Convidados</h2>
-            <div className="space-y-5">
-                <div className="flex items-center justify-between gap-4">
-                    <div className="space-y-1.5">
-                        <span className="block font-medium text-zinc-100">
-                            Pedro Guilherme
-                        </span>
-                        <span className="block text-sm text-zinc-400 truncate">
-                            pg20041312@gmail.com
-                        </span>
+  const { tripId } = useParams()
+  const [participants, setParticipants] = useState<Participant[]>([])
 
-                    </div>
-                    <CircleDashed className="text-zinc-400 size-5 shrink-0" />
+  useEffect(() => {
+    api.get(`trips/${tripId}/participants`).then(response => setParticipants(response.data.participants))
+  }, [tripId])
 
-                </div>
+  return (
+    <div className="space-y-6">
+      <h2 className="font-semibold text-xl">Convidados</h2>
 
-                <div className="flex items-center justify-between gap-4">
-                    <div className="space-y-1.5">
-                        <span className="block font-medium text-zinc-100">
-                            Brenda Xavier
-                        </span>
-                        <span className="block text-sm text-zinc-400 truncate">
-                            brendaxavieralmeida@gmail.com
-                        </span>
-
-                    </div>
-                    <CircleDashed className="text-zinc-400 size-5 shrink-0" />
-
-                </div>
-
+      <div className="space-y-5">
+        {participants.map((participant, index) => (
+          <div key={participant.id} className="flex items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <span className="block font-medium text-zinc-100">{participant.name ?? `Convidado ${index}`}</span>
+              <span className="block text-sm text-zinc-400 truncate">
+                {participant.email}
+              </span>
             </div>
 
-            <Button variant="secondary" size="full">
-                <UserCog className="size-5" />
+            {participant.is_confirmed ? (
+              <CheckCircle2 className="text-green-400 size-5 shrink-0" />
+            ) : (
+              <CircleDashed className="text-zinc-400 size-5 shrink-0" />
+            )}
+          </div>
+        ))}
+      </div>
 
-                Gerenciar convidados
-            </Button>
-
-        </div>
-    )
+      <Button variant="secondary" size="full">
+        <UserCog className="size-5" />
+        Gerenciar convidados
+      </Button>
+    </div>
+  )
 }
